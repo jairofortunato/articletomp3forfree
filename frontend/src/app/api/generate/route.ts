@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);
@@ -15,22 +16,16 @@ export async function POST(request: Request) {
         }
 
         const uniqueId = Date.now().toString();
-        const publicDir = path.join(process.cwd(), 'public');
-        const audioDir = path.join(publicDir, 'audio');
-        const outputFilename = `${uniqueId}.mp3`;
-        const outputPath = path.join(audioDir, outputFilename);
+        const tempDir = os.tmpdir();
 
-        // Ensure output dir exists
-        if (!fs.existsSync(audioDir)) {
-            fs.mkdirSync(audioDir, { recursive: true });
-        }
-
-        // Write text to a temp file to avoid CLI escaping issues
-        const tempTextFile = path.join(audioDir, `${uniqueId}.txt`);
+        // Input text file
+        const tempTextFile = path.join(tempDir, `${uniqueId}.txt`);
         await fs.promises.writeFile(tempTextFile, text);
 
-        // Path to the python script - adjusting for docker/local diffs if needed, but assuming local relative path
-        // valid path: ../backend/generate_audio.py relative to frontend root
+        // Output audio file
+        const outputPath = path.join(tempDir, `${uniqueId}.mp3`);
+
+        // Path to the python script
         const scriptPath = path.resolve(process.cwd(), '../backend/generate_audio.py');
 
         // Fallback if not found (debugging)
@@ -40,7 +35,6 @@ export async function POST(request: Request) {
         }
 
         // Command to execute
-        // using 'python' - ensure it's in PATH. On windows often 'python' or 'py'.
         // Detect python command: 'python' on Windows, 'python3' on Linux/Mac (Docker)
         const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
         const command = `${pythonCommand} "${scriptPath}" "${tempTextFile}" --output "${outputPath}" --voice="${voice || 'en-US-ChristopherNeural'}" --rate="${rate || '+0%'}" --pitch="${pitch || '-2Hz'}"`;
@@ -51,18 +45,25 @@ export async function POST(request: Request) {
         console.log("Stdout:", stdout);
         if (stderr) console.error("Stderr:", stderr);
 
-        // Cleanup text file
+        // Read the generated audio file
+        const audioBuffer = await fs.promises.readFile(outputPath);
+
+        // Cleanup temp files
         try {
-            await fs.promises.unlink(tempTextFile);
+            await Promise.all([
+                fs.promises.unlink(tempTextFile),
+                fs.promises.unlink(outputPath)
+            ]);
         } catch (e) {
-            console.error("Failed to delete temp file:", e);
+            console.error("Failed to delete temp files:", e);
         }
 
-        // Return URL relative to public
-        return NextResponse.json({
-            success: true,
-            url: `/audio/${outputFilename}`,
-            message: 'Audio generated successfully'
+        // Return the audio as a stream/buffer
+        return new NextResponse(audioBuffer, {
+            headers: {
+                'Content-Type': 'audio/mpeg',
+                'Content-Length': audioBuffer.length.toString(),
+            },
         });
 
     } catch (error: any) {

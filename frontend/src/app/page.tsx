@@ -27,13 +27,15 @@ export default function Home() {
         body: JSON.stringify({ text, voice, rate, pitch }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate audio');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate audio');
       }
 
-      setAudioUrl(data.url);
+      // Handle binary response
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
     } catch (err: any) {
       setError(err.message);
     } finally {
