@@ -41,7 +41,9 @@ export async function POST(request: Request) {
 
         // Command to execute
         // using 'python' - ensure it's in PATH. On windows often 'python' or 'py'.
-        const command = `python "${scriptPath}" "${tempTextFile}" --output "${outputPath}" --voice="${voice || 'en-US-ChristopherNeural'}" --rate="${rate || '+0%'}" --pitch="${pitch || '-2Hz'}"`;
+        // Detect python command: 'python' on Windows, 'python3' on Linux/Mac (Docker)
+        const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
+        const command = `${pythonCommand} "${scriptPath}" "${tempTextFile}" --output "${outputPath}" --voice="${voice || 'en-US-ChristopherNeural'}" --rate="${rate || '+0%'}" --pitch="${pitch || '-2Hz'}"`;
 
         console.log("Executing command:", command);
 
