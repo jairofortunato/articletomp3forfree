@@ -59,10 +59,10 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white mb-4 animate-fade-in-down drop-shadow-2xl">
-            Article to <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600">MP3</span>
+            Essay to <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600">MP3</span>
           </h1>
           <h2 className="text-xl text-stone-400 font-light tracking-wide animate-fade-in-up">
-            Convert your articles into narrated audio to read with eyes closed.
+            Convert your essays into narrated audio to read with eyes closed.
           </h2>
         </div>
 
@@ -71,7 +71,7 @@ export default function Home() {
 
           {/* Input Area */}
           <div className="mb-8">
-            <label className="block text-xs font-bold text-red-500 mb-2 uppercase tracking-widest">Article Text</label>
+            <label className="block text-xs font-bold text-red-500 mb-2 uppercase tracking-widest">Essay Text</label>
             <textarea
               className="w-full h-48 md:h-64 bg-black border border-zinc-800 rounded-xl p-5 text-stone-200 placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all resize-none leading-relaxed custom-scrollbar"
               placeholder="Paste your text here. Hit the target."
@@ -136,7 +136,7 @@ export default function Home() {
               <div className="flex justify-center">
                 <a
                   href={audioUrl}
-                  download="article-audio.mp3"
+                  download="essay-audio.mp3"
                   className="inline-flex items-center gap-2 text-sm text-stone-400 hover:text-white transition-colors group/link"
                 >
                   <span className="text-cyan-500 group-hover/link:text-cyan-400">Download MP3</span>
